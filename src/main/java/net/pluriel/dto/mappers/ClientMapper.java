@@ -9,7 +9,6 @@ import net.pluriel.entities.Client;
 import org.springframework.stereotype.Component;
 
 
-@Component
 @Mapper(componentModel = "spring")
 public interface ClientMapper {
 
