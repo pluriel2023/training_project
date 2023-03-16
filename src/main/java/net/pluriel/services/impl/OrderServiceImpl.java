@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import lombok.SneakyThrows;
@@ -37,8 +38,8 @@ public class OrderServiceImpl  implements OrderService{
 	@Override
 	public OrderResponseDto create(OrderRequestDto OrderRequestDto) {
 		Order orderRequest = orderMapper.convertRequestToEntity(OrderRequestDto);
-		Client client=clientRepository.findById(OrderRequestDto.getClientId()).orElseThrow(() -> new Exception("Not Found"));
-		Product product=productRepository.findById(OrderRequestDto.getProductId()).orElseThrow(() -> new Exception("Not Found"));
+		Client client=clientRepository.findById(OrderRequestDto.getClientId()).orElseThrow(() -> new Exception("Client Not Found"));
+		Product product=productRepository.findById(OrderRequestDto.getProductId()).orElseThrow(() -> new Exception("Product Not Found"));
 		orderRequest.setClient(client);
 		orderRequest.setProduct(product);
 		orderRepository.save(orderRequest);
@@ -50,14 +51,23 @@ public class OrderServiceImpl  implements OrderService{
 	@Override
 	public OrderResponseDto getOne(Integer id) {
 		// TODO Auto-generated method stub
-		Order orderRequest =orderRepository.findById(id).orElseThrow(() -> new Exception("Not Found"));
+		Order orderRequest =orderRepository.findById(id).orElseThrow(() -> new Exception("Order Not Found"));
 		return orderMapper.convertEntityToResponse(orderRequest);
 	}
-
+	@SneakyThrows
 	@Override
 	public OrderResponseDto update(OrderRequestDto OrderRequestDto, Integer id) {
 		// TODO Auto-generated method stub
-		return null;
+		Order orderRequest = orderRepository.findById(id).orElseThrow(() -> new Exception("Order Not Found"));
+		Client client=clientRepository.findById(OrderRequestDto.getClientId()).orElseThrow(() -> new Exception("Client Not Found"));
+		Product product=productRepository.findById(OrderRequestDto.getProductId()).orElseThrow(() -> new Exception("Product Not Found"));
+		orderRequest.setClient(client);
+		orderRequest.setProduct(product);
+		orderRequest.setQuantity(OrderRequestDto.getQuantity());
+		orderRequest.setDateOrder(OrderRequestDto.getDateOrder());
+		orderRepository.save(orderRequest);
+
+		return orderMapper.convertEntityToResponse(orderRequest);
 	}
 
 	@Override
@@ -71,13 +81,16 @@ public class OrderServiceImpl  implements OrderService{
 	@Override
 	public Page<OrderResponseDto> getAllInPage(int page, int size) {
 		// TODO Auto-generated method stub
-		return null;
+		
+		return orderRepository.findAll(PageRequest.of(page, size)).map(orderMapper::convertEntityToResponse);
 	}
 
+	@SneakyThrows
 	@Override
 	public void delete(Integer OrderId) {
 		// TODO Auto-generated method stub
-		
+		Order order=orderRepository.findById(OrderId).orElseThrow(() -> new Exception("Order Not Found"));
+		orderRepository.delete(order);
 	}
 
 }
