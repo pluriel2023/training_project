@@ -1,6 +1,7 @@
 package net.pluriel.services.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -62,7 +63,9 @@ public class OrderServiceImpl  implements OrderService{
 	@Override
 	public List<OrderResponseDto> getAll() {
 		// TODO Auto-generated method stub
-		return null;
+		List<Order > all=orderRepository.findAll();
+		List<OrderResponseDto> result =all.stream().map(orderMapper::convertEntityToResponse).collect(Collectors.toList());
+		return result;
 	}
 
 	@Override
