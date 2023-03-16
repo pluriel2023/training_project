@@ -13,4 +13,5 @@ public interface ClientService {
 	public ClientResponseDto update(ClientRequestDto clientRequestDto, Integer id);
 	public List<ClientResponseDto> getAll();
 	public Page<ClientResponseDto> getAllInPage(int page, int size);
+	public void delete(Integer clientId);
 }

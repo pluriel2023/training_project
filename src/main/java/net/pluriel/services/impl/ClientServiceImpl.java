@@ -72,5 +72,13 @@ public class ClientServiceImpl implements ClientService{
 	public Page<ClientResponseDto> getAllInPage(int page, int size) {
 		return clientRepository.findAll(PageRequest.of(page, size)).map(clientMapper::convertEntityToResponse);
 	}
+	@SneakyThrows
+	@Override
+	public void delete(Integer clientId) {
+		// TODO Auto-generated method stub
+		Client client = clientRepository.findById(clientId).orElseThrow(() -> new Exception("Not Found"));
+		clientRepository.delete(client);
+		
+	}
 	
 }
