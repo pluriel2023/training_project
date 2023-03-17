@@ -11,6 +11,6 @@ import net.pluriel.entities.Facture;
 @Repository
 public interface FactureRepository extends JpaRepository<Facture, Integer>{
 	
-	@Query("select facture from Facture ")
-	public Page<Facture> getAllByClientId(Integer clientId, Pageable pageable);
+//	@Query("select facture from Facture ")
+//	public Page<Facture> getAllByClientId(Integer clientId, Pageable pageable);
 }
