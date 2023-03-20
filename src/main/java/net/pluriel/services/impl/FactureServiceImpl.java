@@ -17,6 +17,7 @@ import net.pluriel.dto.responses.FactureResponseDto;
 import net.pluriel.entities.Facture;
 import net.pluriel.entities.Order;
 import net.pluriel.repositories.FactureRepository;
+import net.pluriel.repositories.OrderRepository;
 import net.pluriel.services.FactureService;
 
 @Service
@@ -27,6 +28,9 @@ public class FactureServiceImpl implements FactureService{
 	
 	@Autowired
 	private FactureRepository factureRepository;
+	@Autowired
+	private OrderRepository orderRepository;
+
 	
 	@Override
 	@Transactional
@@ -62,10 +66,30 @@ public class FactureServiceImpl implements FactureService{
 		Facture facture = factureRepository.findById(id).orElseThrow(() -> new Exception("Facture non trouvée"));
 		Facture factureRequest = factureMapper.convertRequestToEntity(factureRequestDto);
 		
-		factureRequest.getOrders().stream().forEach(order -> {
+		/*factureRequest.getOrders().stream().forEach(order -> {
 			// ---------------------- Check ClientId, productId ------------
 			order.setFacture(facture);
-		});
+		});*/
+	
+		
+		List<Order> ordersToDelete = new ArrayList<>();
+        for (Order existingOrder : facture.getOrders()) {
+            boolean found = false;
+            for (Order updatedOrder : factureRequest.getOrders()) {
+            	updatedOrder.setFacture(facture);
+
+                if (existingOrder.getId() == updatedOrder.getId()) {
+                    found = true;
+                    break;
+                }
+                
+            }
+            if (!found) {
+                ordersToDelete.add(existingOrder);
+            }
+        }
+        orderRepository.deleteAll(ordersToDelete);
+        
 		
 		facture.setDatePaymentFacture(factureRequest.getDatePaymentFacture());
 		facture.setOrders(factureRequest.getOrders());
