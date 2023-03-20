@@ -37,7 +37,7 @@ public class Product {
     private BigDecimal price;
     
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "product")
-    @JsonIgnoreProperties({"client"})
+    @JsonIgnoreProperties({"product"})
     @OrderBy("id ASC")
     private List<Order> orders;
     

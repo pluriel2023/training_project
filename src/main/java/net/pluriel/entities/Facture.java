@@ -4,17 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -41,7 +31,11 @@ public class Facture {
     @JsonIgnoreProperties({"facture"})
     @OrderBy("id ASC")
     private List<Order> orders;
-    
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "facture")
+    @JsonIgnoreProperties({"facture"})
+    @OrderBy("id ASC")
+    private List<PaymentFacture> paymentFactures;
     @CreationTimestamp
 	@Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
