@@ -1,6 +1,7 @@
 package net.pluriel.services.impl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import net.pluriel.dto.mappers.ClientMapper;
 import net.pluriel.dto.requests.ClientRequestDto;
 import net.pluriel.dto.responses.ClientResponseDto;
 import net.pluriel.entities.Client;
+import net.pluriel.exceptions.NotFound;
+import net.pluriel.exceptions.RestException;
 import net.pluriel.repositories.ClientRepository;
 import net.pluriel.services.ClientService;
 
@@ -29,6 +32,12 @@ public class ClientServiceImpl implements ClientService{
 	@Override
 	public ClientResponseDto create(ClientRequestDto clientRequestDto) {
 		Client clientRequest = clientMapper.convertRequestToEntity(clientRequestDto);
+		
+		Optional<Client> ClientOptional = clientRepository.findByName(clientRequest.getName());
+        if (ClientOptional.isPresent()) {
+            throw new RestException("Client with name '" + clientRequest.getName() + "' already exists");
+        }
+		
 		clientRepository.save(clientRequest);
 		return clientMapper.convertEntityToResponse(clientRequest);
 	}

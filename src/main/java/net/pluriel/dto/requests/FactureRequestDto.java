@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 public class FactureRequestDto {
 	private Date datePaymentFacture;
 	private List<OrderRequestDto> orders;
+	private List<PaymentFactureRequestDto> paymentFactures;
 }

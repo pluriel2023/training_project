@@ -29,8 +29,8 @@ public class Client {
 	
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    
-    @Column(nullable = false, length = 65, name = "name")
+
+    @Column(nullable = false,unique = true ,length = 65, name = "name")
     private String name;
     
     @Column(nullable = false, length = 100, name = "email")
