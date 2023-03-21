@@ -42,6 +42,11 @@ public class Facture {
     @OrderBy("id ASC")
     private List<Order> orders;
     
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "facture")
+    @JsonIgnoreProperties({"facture"})
+    @OrderBy("id ASC")
+    private List<PaymentFacture> paymentFactures;
+    
     @CreationTimestamp
 	@Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

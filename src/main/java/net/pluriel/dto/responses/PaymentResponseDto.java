@@ -9,6 +9,6 @@ import net.pluriel.entities.Mode;
 @NoArgsConstructor
 public class PaymentResponseDto {
 
-	private Integer idPayment;
+	private Integer id;
 	private Mode mode;
 }
