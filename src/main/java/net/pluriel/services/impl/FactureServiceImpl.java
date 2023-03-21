@@ -38,7 +38,7 @@ public class FactureServiceImpl implements FactureService{
 
 	@Autowired
 	private FactureMapper factureMapper;
-	
+
 	@Autowired
 	private FactureRepository factureRepository;
 	@Autowired
@@ -47,121 +47,131 @@ public class FactureServiceImpl implements FactureService{
 	private PaymentFactureRepository paymentFactureRepository;
 	@Autowired
 	private ClientRepository clientRepository;
-	
+
 	@Autowired
 	private ProductRepository productRepository;
 	@Autowired
 	private PaymentRepository paymentRepository;
-	
+
 	private BigDecimal totatprice;
 	private BigDecimal totalmontant;
-	
+
 	String badRequestmessage;
-	
-	
 
-	
-	
-	
-   public boolean totalVerification(Facture facture) {
-        
-        totatprice=new BigDecimal("0.0");
-        totalmontant=new BigDecimal("0.0");
-        facture.getOrders().stream().forEach(order -> { 
-             Product product =productRepository.findById(order.getProduct().getId()).orElseThrow(() -> new NotFound("Product  does not exist"));
-             totatprice = totatprice.add(product.getPrice().multiply(new BigDecimal(order.getQuantity())));
 
-                     
-        });
-         
-        facture.getPaymentFactures().stream().forEach(paymenFacture -> {
-                
-        	
-        	totalmontant=totalmontant.add(paymenFacture.getMontant());
-                     
-        });
-        
-         if(totatprice.compareTo(totalmontant) == 0) {
-             return true;
-             
-         }
-        
-        return false;
-    }
 
-	
-	@Override
-	@Transactional
-	public FactureResponseDto create(FactureRequestDto factureRequestDto) {
-		
-		Facture facture = factureMapper.convertRequestToEntity(factureRequestDto);
+	public void validation(Facture facture) {
 		badRequestmessage="";
 		if (facture.getOrders()== null || facture.getOrders().size()==0) {
 			badRequestmessage+="OrderList cannot be null or empty. ";
-           
-        }
+
+		}
 		if (facture.getPaymentFactures()== null || facture.getPaymentFactures().size()==0) {
 			badRequestmessage+="paymentInvoice List cannot be null or empty. ";
 			//throw new BadRequest("paymentInvoice List cannot be null or empty");
-        }
-		
-		
+		}
+
 		if(totalVerification( facture)==false) {
 			badRequestmessage+="total montant does not equal total price !!!!!   ";
-		};
-		
+		}
 		List<Order> orders = facture.getOrders();
 		List<PaymentFacture> paymentFactures = facture.getPaymentFactures();
-		
-		facture.setOrders(new ArrayList<>());
-		facture.setPaymentFactures(new ArrayList<>());
-		
-		
-		factureRepository.save(facture);
-		
 		orders.stream().forEach(order -> {
 			if(order.getClient() == null   ) {
-				 throw new NotFound("Client cannot be null or empty ");
-			 }
+				throw new NotFound("Client cannot be null or empty ");
+			}
 			if(order.getProduct()==null) {
 				throw new NotFound("Product cannot be null or empty ");
 			}
-			 if(order.getQuantity() <= 0) {
-				 badRequestmessage+="Quantity cannot be equal or lower than 0. ";
-				
-			 }
-			
-			 clientRepository.findById(order.getClient().getId()).orElseThrow(() -> new NotFound("client does not exist"));
-			 productRepository.findById(order.getProduct().getId()).orElseThrow(() -> new NotFound("Product  does not exist"));
+			if(order.getQuantity() <= 0) {
+				badRequestmessage+="Quantity cannot be equal or lower than 0. ";
+
+			}
+
+			clientRepository.findById(order.getClient().getId()).orElseThrow(() -> new NotFound("client does not exist"));
+			productRepository.findById(order.getProduct().getId()).orElseThrow(() -> new NotFound("Product  does not exist"));
+
+		});
+		paymentFactures.stream().forEach(paymentFacture -> {
+			if(paymentFacture.getPayment() == null) {
+				throw new NotFound("Payment cannot be null or empty. ");
+			}
+			paymentRepository.findById(paymentFacture.getPayment().getId()).orElseThrow(() -> new NotFound("Payment  does not exist"));
+
+
+		});
+
+		if(badRequestmessage!="") {
+			throw new RestException(badRequestmessage);
+		}
+
+	}
+
+
+	public boolean totalVerification(Facture facture) {
+
+		totatprice=new BigDecimal("0.0");
+		totalmontant=new BigDecimal("0.0");
+		facture.getOrders().stream().forEach(order -> {
+			Product product =productRepository.findById(order.getProduct().getId()).orElseThrow(() -> new NotFound("Product  does not exist"));
+			totatprice = totatprice.add(product.getPrice().multiply(new BigDecimal(order.getQuantity())));
+
+
+		});
+
+		facture.getPaymentFactures().stream().forEach(paymenFacture -> {
+
+
+			totalmontant=totalmontant.add(paymenFacture.getMontant());
+
+		});
+
+		if(totatprice.compareTo(totalmontant) == 0) {
+			return true;
+
+		}
+
+		return false;
+	}
+
+
+	@Override
+	@Transactional
+	public FactureResponseDto create(FactureRequestDto factureRequestDto) {
+
+		Facture facture = factureMapper.convertRequestToEntity(factureRequestDto);
+
+		validation(facture);
+		List<Order> orders = facture.getOrders();
+		List<PaymentFacture> paymentFactures = facture.getPaymentFactures();
+
+		facture.setOrders(new ArrayList<>());
+		facture.setPaymentFactures(new ArrayList<>());
+
+
+		factureRepository.save(facture);
+
+		orders.stream().forEach(order -> {
+
 			order.setId(null);
 			// ---------------------- Check ClientId, productId ------------
 			order.setFacture(facture);
 		});
 		paymentFactures.stream().forEach(paymentFacture -> {
-			if(paymentFacture.getPayment() == null) {
-				throw new NotFound("Payment cannot be null or empty. "); 
-			 }
-			paymentRepository.findById(paymentFacture.getPayment().getId()).orElseThrow(() -> new NotFound("Payment  does not exist"));
-			
-			
-			 
-			
-			
+
 			paymentFacture.setId(null);
 			// ---------------------- Check ClientId, productId ------------
 			paymentFacture.setFacture(facture);
 		});
-		
-		
+
+
 		facture.setOrders(orders);
 		facture.setPaymentFactures(paymentFactures);
-		
-		if(badRequestmessage!="") {
-			throw new RestException(badRequestmessage);
-		}
-		
-		
-		
+
+
+
+
+
 		return factureMapper.convertEntityToResponse(facture);
 	}
 
@@ -178,102 +188,63 @@ public class FactureServiceImpl implements FactureService{
 	public FactureResponseDto update(FactureRequestDto factureRequestDto, Integer id) {
 		Facture facture = factureRepository.findById(id).orElseThrow(() -> new Exception("Facture non trouvée"));
 		Facture factureRequest = factureMapper.convertRequestToEntity(factureRequestDto);
-		
-		badRequestmessage="";
-		if (factureRequest.getOrders()== null || factureRequest.getOrders().size()==0) {
-			badRequestmessage+="OrderList cannot be null or empty. ";
-           
-        }
-		if (factureRequest.getPaymentFactures()== null || factureRequest.getPaymentFactures().size()==0) {
-			badRequestmessage+="paymentInvoice List cannot be null or empty. ";
-			//throw new BadRequest("paymentInvoice List cannot be null or empty");
-        }
-		
-		if(totalVerification( factureRequest)==false) {
-			badRequestmessage+="total montant does not equal total price !!!!!   ";
-		};
-		
-		
-		/*factureRequest.getOrders().stream().forEach(order -> {
-			// ---------------------- Check ClientId, productId ------------
-			order.setFacture(facture);
-		});*/
-		/* salam ssi yassine hadi li fuha 2 dyal les boucle drnaha bach finma tm7a chi order flupdate taytm7a 7ta flbase de donne 
-		 * w3lach makhdmnach bstream 7it fstream mamymknch dir break 
-		 * wl9ina 2dyal solusions khrin ya ima ndiro query frepository bach nm7iw hadok li zaydin fdatabase 
-		 * ola nzido 2 dyal les liste f facture request fihom les ids dyal order/paymentfacture li aytm7aw ofach tatdkhl lhna 
+		validation(factureRequest);
+
+        /*factureRequest.getOrders().stream().forEach(order -> {
+            // ---------------------- Check ClientId, productId ------------
+            order.setFacture(facture);
+        });*/
+		/* salam ssi yassine hadi li fuha 2 dyal les boucle drnaha bach finma tm7a chi order flupdate taytm7a 7ta flbase de donne
+		 * w3lach makhdmnach bstream 7it fstream mamymknch dir break
+		 * wl9ina 2dyal solusions khrin ya ima ndiro query frepository bach nm7iw hadok li zaydin fdatabase
+		 * ola nzido 2 dyal les liste f facture request fihom les ids dyal order/paymentfacture li aytm7aw ofach tatdkhl lhna
 		 * tatm7im bdeleteAll(idsToDelete)  */
-		
+
 		List<Order> ordersToDelete = new ArrayList<>();
-        for (Order existingOrder : facture.getOrders()) {
-            boolean found = false;
-            for (Order updatedOrder : factureRequest.getOrders()) {
-            	if(updatedOrder.getClient() == null   ) {
-   				 throw new NotFound("Client cannot be null or empty ");
-   			 }
-   			if(updatedOrder.getProduct()==null) {
-   				throw new NotFound("Product cannot be null or empty ");
-   			}
-   			 if(updatedOrder.getQuantity() <= 0) {
-   				 badRequestmessage+="Quantity cannot be equal or lower than 0. ";
-   				
-   			 }
-   			 clientRepository.findById(updatedOrder.getClient().getId()).orElseThrow(() -> new NotFound("client does not exist"));
-   			 productRepository.findById(updatedOrder.getProduct().getId()).orElseThrow(() -> new NotFound("Product  does not exist"));
-   			
-            	
-            	updatedOrder.setFacture(facture);
+		for (Order existingOrder : facture.getOrders()) {
+			boolean found = false;
+			for (Order updatedOrder : factureRequest.getOrders()) {
 
-                if (existingOrder.getId() == updatedOrder.getId()) {
-                    found = true;
-                    break;
-                }
-                
-            }
-            if (!found) {
-                ordersToDelete.add(existingOrder);
-            }
-        }
-        orderRepository.deleteAll(ordersToDelete);
-        
-        
-        List<PaymentFacture> PaymentFacturesToDelete = new ArrayList<>();
-        for (PaymentFacture existingPaymentFacture : facture.getPaymentFactures()) {
-            boolean found = false;
-            for (PaymentFacture updatedPaymentFacture : factureRequest.getPaymentFactures()) {
-            	if(updatedPaymentFacture.getPayment() == null) {
-    				throw new NotFound("Payment cannot be null or empty. "); 
-    			 }
-    			paymentRepository.findById(updatedPaymentFacture.getPayment().getId()).orElseThrow(() -> new NotFound("Payment  does not exist"));
-    			
-            	
-            	updatedPaymentFacture.setFacture(facture);
+				updatedOrder.setFacture(facture);
 
-                if (existingPaymentFacture.getId() == updatedPaymentFacture.getId()) {
-                    found = true;
-                    break;
-                }
-                
-            }
-            if (!found) {
-                PaymentFacturesToDelete.add(existingPaymentFacture);
-            }
-        }
-        paymentFactureRepository.deleteAll(PaymentFacturesToDelete);
-		
+				if (existingOrder.getId() == updatedOrder.getId()) {
+					found = true;
+					break;
+				}
+
+			}
+			if (!found) {
+				ordersToDelete.add(existingOrder);
+			}
+		}
+		orderRepository.deleteAll(ordersToDelete);
+
+
+		List<PaymentFacture> PaymentFacturesToDelete = new ArrayList<>();
+		for (PaymentFacture existingPaymentFacture : facture.getPaymentFactures()) {
+			boolean found = false;
+			for (PaymentFacture updatedPaymentFacture : factureRequest.getPaymentFactures()) {
+
+				updatedPaymentFacture.setFacture(facture);
+
+				if (existingPaymentFacture.getId() == updatedPaymentFacture.getId()) {
+					found = true;
+					break;
+				}
+
+			}
+			if (!found) {
+				PaymentFacturesToDelete.add(existingPaymentFacture);
+			}
+		}
+		paymentFactureRepository.deleteAll(PaymentFacturesToDelete);
+
 		facture.setDatePaymentFacture(factureRequest.getDatePaymentFacture());
 		facture.setOrders(factureRequest.getOrders());
 		facture.setPaymentFactures(factureRequest.getPaymentFactures());
-		
-		factureRepository.save(facture);
-		
 
-		if(badRequestmessage!="") {
-			throw new RestException(badRequestmessage);
-		}
-		
-		
-		
+		factureRepository.save(facture);
+
 		return factureMapper.convertEntityToResponse(facture);
 	}
 
