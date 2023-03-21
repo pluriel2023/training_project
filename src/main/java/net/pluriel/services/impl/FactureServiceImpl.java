@@ -60,7 +60,53 @@ public class FactureServiceImpl implements FactureService{
 	
 	
 
-	
+	public void validation(Facture facture) {
+		badRequestmessage="";
+		if (facture.getOrders()== null || facture.getOrders().size()==0) {
+			badRequestmessage+="OrderList cannot be null or empty. ";
+           
+        }
+		if (facture.getPaymentFactures()== null || facture.getPaymentFactures().size()==0) {
+			badRequestmessage+="paymentInvoice List cannot be null or empty. ";
+			//throw new BadRequest("paymentInvoice List cannot be null or empty");
+        }
+		
+		
+		if(totalVerification( facture)==false) {
+			badRequestmessage+="total montant does not equal total price !!!!!   ";
+		}
+		List<Order> orders = facture.getOrders();
+		List<PaymentFacture> paymentFactures = facture.getPaymentFactures();
+		orders.stream().forEach(order -> {
+			if(order.getClient() == null   ) {
+				 throw new NotFound("Client cannot be null or empty ");
+			 }
+			if(order.getProduct()==null) {
+				throw new NotFound("Product cannot be null or empty ");
+			}
+			 if(order.getQuantity() <= 0) {
+				 badRequestmessage+="Quantity cannot be equal or lower than 0. ";
+				
+			 }
+			
+			 clientRepository.findById(order.getClient().getId()).orElseThrow(() -> new NotFound("client does not exist"));
+			 productRepository.findById(order.getProduct().getId()).orElseThrow(() -> new NotFound("Product  does not exist"));
+			
+		});
+		paymentFactures.stream().forEach(paymentFacture -> {
+			if(paymentFacture.getPayment() == null) {
+				throw new NotFound("Payment cannot be null or empty. "); 
+			 }
+			paymentRepository.findById(paymentFacture.getPayment().getId()).orElseThrow(() -> new NotFound("Payment  does not exist"));
+
+			
+		});
+		
+		if(badRequestmessage!="") {
+			throw new RestException(badRequestmessage);
+		}		
+		
+	}
 	
 	
    public boolean totalVerification(Facture facture) {
@@ -95,21 +141,8 @@ public class FactureServiceImpl implements FactureService{
 	public FactureResponseDto create(FactureRequestDto factureRequestDto) {
 		
 		Facture facture = factureMapper.convertRequestToEntity(factureRequestDto);
-		badRequestmessage="";
-		if (facture.getOrders()== null || facture.getOrders().size()==0) {
-			badRequestmessage+="OrderList cannot be null or empty. ";
-           
-        }
-		if (facture.getPaymentFactures()== null || facture.getPaymentFactures().size()==0) {
-			badRequestmessage+="paymentInvoice List cannot be null or empty. ";
-			//throw new BadRequest("paymentInvoice List cannot be null or empty");
-        }
 		
-		
-		if(totalVerification( facture)==false) {
-			badRequestmessage+="total montant does not equal total price !!!!!   ";
-		};
-		
+		validation(facture);
 		List<Order> orders = facture.getOrders();
 		List<PaymentFacture> paymentFactures = facture.getPaymentFactures();
 		
@@ -120,33 +153,13 @@ public class FactureServiceImpl implements FactureService{
 		factureRepository.save(facture);
 		
 		orders.stream().forEach(order -> {
-			if(order.getClient() == null   ) {
-				 throw new NotFound("Client cannot be null or empty ");
-			 }
-			if(order.getProduct()==null) {
-				throw new NotFound("Product cannot be null or empty ");
-			}
-			 if(order.getQuantity() <= 0) {
-				 badRequestmessage+="Quantity cannot be equal or lower than 0. ";
-				
-			 }
-			
-			 clientRepository.findById(order.getClient().getId()).orElseThrow(() -> new NotFound("client does not exist"));
-			 productRepository.findById(order.getProduct().getId()).orElseThrow(() -> new NotFound("Product  does not exist"));
+		
 			order.setId(null);
 			// ---------------------- Check ClientId, productId ------------
 			order.setFacture(facture);
 		});
 		paymentFactures.stream().forEach(paymentFacture -> {
-			if(paymentFacture.getPayment() == null) {
-				throw new NotFound("Payment cannot be null or empty. "); 
-			 }
-			paymentRepository.findById(paymentFacture.getPayment().getId()).orElseThrow(() -> new NotFound("Payment  does not exist"));
-			
-			
-			 
-			
-			
+	
 			paymentFacture.setId(null);
 			// ---------------------- Check ClientId, productId ------------
 			paymentFacture.setFacture(facture);
@@ -156,9 +169,7 @@ public class FactureServiceImpl implements FactureService{
 		facture.setOrders(orders);
 		facture.setPaymentFactures(paymentFactures);
 		
-		if(badRequestmessage!="") {
-			throw new RestException(badRequestmessage);
-		}
+		
 		
 		
 		
@@ -178,21 +189,7 @@ public class FactureServiceImpl implements FactureService{
 	public FactureResponseDto update(FactureRequestDto factureRequestDto, Integer id) {
 		Facture facture = factureRepository.findById(id).orElseThrow(() -> new Exception("Facture non trouvée"));
 		Facture factureRequest = factureMapper.convertRequestToEntity(factureRequestDto);
-		
-		badRequestmessage="";
-		if (factureRequest.getOrders()== null || factureRequest.getOrders().size()==0) {
-			badRequestmessage+="OrderList cannot be null or empty. ";
-           
-        }
-		if (factureRequest.getPaymentFactures()== null || factureRequest.getPaymentFactures().size()==0) {
-			badRequestmessage+="paymentInvoice List cannot be null or empty. ";
-			//throw new BadRequest("paymentInvoice List cannot be null or empty");
-        }
-		
-		if(totalVerification( factureRequest)==false) {
-			badRequestmessage+="total montant does not equal total price !!!!!   ";
-		};
-		
+		validation(factureRequest);
 		
 		/*factureRequest.getOrders().stream().forEach(order -> {
 			// ---------------------- Check ClientId, productId ------------
@@ -208,19 +205,6 @@ public class FactureServiceImpl implements FactureService{
         for (Order existingOrder : facture.getOrders()) {
             boolean found = false;
             for (Order updatedOrder : factureRequest.getOrders()) {
-            	if(updatedOrder.getClient() == null   ) {
-   				 throw new NotFound("Client cannot be null or empty ");
-   			 }
-   			if(updatedOrder.getProduct()==null) {
-   				throw new NotFound("Product cannot be null or empty ");
-   			}
-   			 if(updatedOrder.getQuantity() <= 0) {
-   				 badRequestmessage+="Quantity cannot be equal or lower than 0. ";
-   				
-   			 }
-   			 clientRepository.findById(updatedOrder.getClient().getId()).orElseThrow(() -> new NotFound("client does not exist"));
-   			 productRepository.findById(updatedOrder.getProduct().getId()).orElseThrow(() -> new NotFound("Product  does not exist"));
-   			
             	
             	updatedOrder.setFacture(facture);
 
@@ -241,11 +225,6 @@ public class FactureServiceImpl implements FactureService{
         for (PaymentFacture existingPaymentFacture : facture.getPaymentFactures()) {
             boolean found = false;
             for (PaymentFacture updatedPaymentFacture : factureRequest.getPaymentFactures()) {
-            	if(updatedPaymentFacture.getPayment() == null) {
-    				throw new NotFound("Payment cannot be null or empty. "); 
-    			 }
-    			paymentRepository.findById(updatedPaymentFacture.getPayment().getId()).orElseThrow(() -> new NotFound("Payment  does not exist"));
-    			
             	
             	updatedPaymentFacture.setFacture(facture);
 
@@ -268,9 +247,7 @@ public class FactureServiceImpl implements FactureService{
 		factureRepository.save(facture);
 		
 
-		if(badRequestmessage!="") {
-			throw new RestException(badRequestmessage);
-		}
+		
 		
 		
 		
