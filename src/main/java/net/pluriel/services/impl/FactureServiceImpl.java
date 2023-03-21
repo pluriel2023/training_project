@@ -1,5 +1,6 @@
 package net.pluriel.services.impl;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +58,11 @@ public class FactureServiceImpl implements FactureService{
 	
 	String badRequestmessage;
 	
+	
+
+	
+	
+	
    public boolean totalVerification(Facture facture) {
         
         totatprice=new BigDecimal("0.0");
@@ -78,8 +85,7 @@ public class FactureServiceImpl implements FactureService{
              return true;
              
          }
-         totatprice=new BigDecimal("0.0");;
-            totalmontant=new BigDecimal("0.0");
+        
         return false;
     }
 
@@ -137,6 +143,10 @@ public class FactureServiceImpl implements FactureService{
 			 }
 			paymentRepository.findById(paymentFacture.getPayment().getId()).orElseThrow(() -> new NotFound("Payment  does not exist"));
 			
+			
+			 
+			
+			
 			paymentFacture.setId(null);
 			// ---------------------- Check ClientId, productId ------------
 			paymentFacture.setFacture(facture);
@@ -150,7 +160,7 @@ public class FactureServiceImpl implements FactureService{
 			throw new RestException(badRequestmessage);
 		}
 		
-		badRequestmessage="";
+		
 		
 		return factureMapper.convertEntityToResponse(facture);
 	}
@@ -179,7 +189,7 @@ public class FactureServiceImpl implements FactureService{
 			//throw new BadRequest("paymentInvoice List cannot be null or empty");
         }
 		
-		if(totalVerification( facture)==false) {
+		if(totalVerification( factureRequest)==false) {
 			badRequestmessage+="total montant does not equal total price !!!!!   ";
 		};
 		
@@ -188,7 +198,11 @@ public class FactureServiceImpl implements FactureService{
 			// ---------------------- Check ClientId, productId ------------
 			order.setFacture(facture);
 		});*/
-	
+		/* salam ssi yassine hadi li fuha 2 dyal les boucle drnaha bach finma tm7a chi order flupdate taytm7a 7ta flbase de donne 
+		 * w3lach makhdmnach bstream 7it fstream mamymknch dir break 
+		 * wl9ina 2dyal solusions khrin ya ima ndiro query frepository bach nm7iw hadok li zaydin fdatabase 
+		 * ola nzido 2 dyal les liste f facture request fihom les ids dyal order/paymentfacture li aytm7aw ofach tatdkhl lhna 
+		 * tatm7im bdeleteAll(idsToDelete)  */
 		
 		List<Order> ordersToDelete = new ArrayList<>();
         for (Order existingOrder : facture.getOrders()) {
@@ -258,7 +272,7 @@ public class FactureServiceImpl implements FactureService{
 			throw new RestException(badRequestmessage);
 		}
 		
-		badRequestmessage="";
+		
 		
 		return factureMapper.convertEntityToResponse(facture);
 	}
