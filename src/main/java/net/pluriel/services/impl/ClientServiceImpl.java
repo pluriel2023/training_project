@@ -33,11 +33,11 @@ public class ClientServiceImpl implements ClientService{
 	public ClientResponseDto create(ClientRequestDto clientRequestDto) {
 		Client clientRequest = clientMapper.convertRequestToEntity(clientRequestDto);
 		
-		Optional<Client> ClientOptional = clientRepository.findByName(clientRequest.getName());
+		Optional<Client> ClientOptional = clientRepository.findByName(clientRequest.getName().toUpperCase());
         if (ClientOptional.isPresent()) {
             throw new RestException("Client with name '" + clientRequest.getName() + "' already exists");
         }
-		
+        clientRequest.setName(clientRequest.getName().toUpperCase());
 		clientRepository.save(clientRequest);
 		return clientMapper.convertEntityToResponse(clientRequest);
 	}

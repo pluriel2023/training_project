@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.pluriel.dto.mappers.FactureMapper;
+import net.pluriel.dto.mappers.FactureMapper; 
 import net.pluriel.dto.requests.FactureRequestDto;
 import net.pluriel.dto.responses.FactureResponseDto;
 import net.pluriel.entities.Facture;
@@ -37,8 +37,7 @@ import net.pluriel.services.FactureService;
 public class FactureServiceImpl implements FactureService{
 
 	@Autowired
-	private FactureMapper factureMapper;
-	
+	private FactureMapper factureMapper;	
 	@Autowired
 	private FactureRepository factureRepository;
 	@Autowired
@@ -47,7 +46,6 @@ public class FactureServiceImpl implements FactureService{
 	private PaymentFactureRepository paymentFactureRepository;
 	@Autowired
 	private ClientRepository clientRepository;
-	
 	@Autowired
 	private ProductRepository productRepository;
 	@Autowired
