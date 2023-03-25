@@ -185,7 +185,7 @@ public class FactureServiceImpl implements FactureService{
 	@Override
 	@Transactional
 	public FactureResponseDto update(FactureRequestDto factureRequestDto, Integer id) {
-		Facture facture = factureRepository.findById(id).orElseThrow(() -> new Exception("Facture non trouvée"));
+		Facture facture = factureRepository.findById(id).orElseThrow(() -> new NotFound("Facture non trouvée"));
 		Facture factureRequest = factureMapper.convertRequestToEntity(factureRequestDto);
 		validation(factureRequest);
 		

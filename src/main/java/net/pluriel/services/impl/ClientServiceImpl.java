@@ -45,7 +45,7 @@ public class ClientServiceImpl implements ClientService{
 	@SneakyThrows
 	@Override
 	public ClientResponseDto getOne(Integer id){
-		Client client = clientRepository.findById(id).orElseThrow(() -> new Exception("Not Found"));
+		Client client = clientRepository.findById(id).orElseThrow(() -> new NotFound("Not Found"));
 //		Optional<Client> clientOpt = clientRepository.findById(id);
 //		Client client = null;
 //		if(clientOpt.isPresent()) {
@@ -59,10 +59,16 @@ public class ClientServiceImpl implements ClientService{
 	@SneakyThrows
 	@Override
 	public ClientResponseDto update(ClientRequestDto clientRequestDto, Integer id) {
-		Client client = clientRepository.findById(id).orElseThrow(() -> new Exception("Not Found"));
+		Client client = clientRepository.findById(id).orElseThrow(() -> new NotFound("Not Found"));
 		Client clientRequest = clientMapper.convertRequestToEntity(clientRequestDto);
 		
-		client.setName(clientRequest.getName());
+		Integer ClientOptional = clientRepository.findByNameUpdate(client.getName(),clientRequest.getName().toUpperCase());
+        if (ClientOptional > 0 ) {
+            throw new RestException("Client with name '" + clientRequest.getName() + "' already exists");
+        }
+		
+		
+		client.setName(clientRequest.getName().toUpperCase());
 		client.setEmail(clientRequest.getEmail());
 		
 		clientRepository.save(client);
