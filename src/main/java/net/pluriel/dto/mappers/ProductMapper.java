@@ -13,9 +13,9 @@ public interface ProductMapper {
 
 	ProductMapper INSTANCE = Mappers.getMapper( ProductMapper.class );
 	
-	Product convertRequestToEntity(ProductRequestDto clientRequest);
+	Product convertRequestToEntity(ProductRequestDto productRequest);
 	
-	Product convertResponseToEntity(ProductResponseDto clientResponse);
+	Product convertResponseToEntity(ProductResponseDto productResponse);
 	
-	ProductResponseDto convertEntityToResponse(Product client);
+	ProductResponseDto convertEntityToResponse(Product product);
 }

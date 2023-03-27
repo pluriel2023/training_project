@@ -34,7 +34,7 @@ public class FactureController {
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<FactureResponseDto> getOne(@PathVariable(name = "id") Integer factureId, @RequestBody FactureRequestDto factureRequest){
+	public ResponseEntity<FactureResponseDto> update(@PathVariable(name = "id") Integer factureId, @RequestBody FactureRequestDto factureRequest){
 		return new ResponseEntity<FactureResponseDto>(factureService.update(factureRequest, factureId), HttpStatus.OK);
 	}
 	

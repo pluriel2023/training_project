@@ -1,6 +1,7 @@
 package net.pluriel.services.impl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import net.pluriel.dto.mappers.ClientMapper;
 import net.pluriel.dto.requests.ClientRequestDto;
 import net.pluriel.dto.responses.ClientResponseDto;
 import net.pluriel.entities.Client;
+import net.pluriel.exceptions.NotFound;
+import net.pluriel.exceptions.RestException;
 import net.pluriel.repositories.ClientRepository;
 import net.pluriel.services.ClientService;
 
@@ -29,6 +32,12 @@ public class ClientServiceImpl implements ClientService{
 	@Override
 	public ClientResponseDto create(ClientRequestDto clientRequestDto) {
 		Client clientRequest = clientMapper.convertRequestToEntity(clientRequestDto);
+		
+		Optional<Client> ClientOptional = clientRepository.findByName(clientRequest.getName().toUpperCase());
+        if (ClientOptional.isPresent()) {
+            throw new RestException("Client with name '" + clientRequest.getName() + "' already exists");
+        }
+        clientRequest.setName(clientRequest.getName().toUpperCase());
 		clientRepository.save(clientRequest);
 		return clientMapper.convertEntityToResponse(clientRequest);
 	}
@@ -36,7 +45,7 @@ public class ClientServiceImpl implements ClientService{
 	@SneakyThrows
 	@Override
 	public ClientResponseDto getOne(Integer id){
-		Client client = clientRepository.findById(id).orElseThrow(() -> new Exception("Not Found"));
+		Client client = clientRepository.findById(id).orElseThrow(() -> new NotFound("Not Found"));
 //		Optional<Client> clientOpt = clientRepository.findById(id);
 //		Client client = null;
 //		if(clientOpt.isPresent()) {
@@ -50,10 +59,16 @@ public class ClientServiceImpl implements ClientService{
 	@SneakyThrows
 	@Override
 	public ClientResponseDto update(ClientRequestDto clientRequestDto, Integer id) {
-		Client client = clientRepository.findById(id).orElseThrow(() -> new Exception("Not Found"));
+		Client client = clientRepository.findById(id).orElseThrow(() -> new NotFound("Not Found"));
 		Client clientRequest = clientMapper.convertRequestToEntity(clientRequestDto);
 		
-		client.setName(clientRequest.getName());
+		Integer ClientOptional = clientRepository.findByNameUpdate(client.getName(),clientRequest.getName().toUpperCase());
+        if (ClientOptional > 0 ) {
+            throw new RestException("Client with name '" + clientRequest.getName() + "' already exists");
+        }
+		
+		
+		client.setName(clientRequest.getName().toUpperCase());
 		client.setEmail(clientRequest.getEmail());
 		
 		clientRepository.save(client);
