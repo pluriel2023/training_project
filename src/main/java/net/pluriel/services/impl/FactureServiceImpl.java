@@ -58,8 +58,6 @@ public class FactureServiceImpl implements FactureService{
 
 	String badRequestmessage;
 
-
-
 	public void validation(Facture facture) {
 		badRequestmessage="";
 		if (facture.getOrders()== null || facture.getOrders().size()==0) {
@@ -85,7 +83,6 @@ public class FactureServiceImpl implements FactureService{
 			}
 			if(order.getQuantity() <= 0) {
 				badRequestmessage+="Quantity cannot be equal or lower than 0. ";
-
 			}
 
 			clientRepository.findById(order.getClient().getId()).orElseThrow(() -> new NotFound("client does not exist"));
@@ -98,7 +95,6 @@ public class FactureServiceImpl implements FactureService{
 			}
 			paymentRepository.findById(paymentFacture.getPayment().getId()).orElseThrow(() -> new NotFound("Payment  does not exist"));
 
-
 		});
 
 		if(badRequestmessage!="") {
@@ -106,7 +102,6 @@ public class FactureServiceImpl implements FactureService{
 		}
 
 	}
-
 
 	public boolean totalVerification(Facture facture) {
 
@@ -116,21 +111,16 @@ public class FactureServiceImpl implements FactureService{
 			Product product =productRepository.findById(order.getProduct().getId()).orElseThrow(() -> new NotFound("Product  does not exist"));
 			totatprice = totatprice.add(product.getPrice().multiply(new BigDecimal(order.getQuantity())));
 
-
 		});
 
 		facture.getPaymentFactures().stream().forEach(paymenFacture -> {
-
-
 			totalmontant=totalmontant.add(paymenFacture.getMontant());
 
 		});
 
 		if(totatprice.compareTo(totalmontant) == 0) {
 			return true;
-
 		}
-
 		return false;
 	}
 
@@ -148,29 +138,19 @@ public class FactureServiceImpl implements FactureService{
 		facture.setOrders(new ArrayList<>());
 		facture.setPaymentFactures(new ArrayList<>());
 
-
 		factureRepository.save(facture);
 
 		orders.stream().forEach(order -> {
-
 			order.setId(null);
-			// ---------------------- Check ClientId, productId ------------
 			order.setFacture(facture);
 		});
 		paymentFactures.stream().forEach(paymentFacture -> {
-
 			paymentFacture.setId(null);
-			// ---------------------- Check ClientId, productId ------------
 			paymentFacture.setFacture(facture);
 		});
 
-
 		facture.setOrders(orders);
 		facture.setPaymentFactures(paymentFactures);
-
-
-
-
 
 		return factureMapper.convertEntityToResponse(facture);
 	}
