@@ -192,14 +192,14 @@ public class FactureServiceImpl implements FactureService{
 		validation(factureRequest);
 		
 		/*factureRequest.getOrders().stream().forEach(order -> {
-			// ---------------------- Check ClientId, productId ------------
-			order.setFacture(facture);
-		});*/
-		/* salam ssi yassine hadi li fuha 2 dyal les boucle drnaha bach finma tm7a chi order flupdate taytm7a 7ta flbase de donne 
-		 * w3lach makhdmnach bstream 7it fstream mamymknch dir break 
-		 * wl9ina 2dyal solusions khrin ya ima ndiro query frepository bach nm7iw hadok li zaydin fdatabase 
-		 * ola nzido 2 dyal les liste f facture request fihom les ids dyal order/paymentfacture li aytm7aw ofach tatdkhl lhna 
-		 * tatm7im bdeleteAll(idsToDelete)  */
+		// ---------------------- Check ClientId, productId ------------
+		order.setFacture(facture);
+	});*/
+	/* salam ssi yassine hadi li fuha 2 dyal les boucle drnaha bach finma tm7a chi order flupdate taytm7a 7ta flbase de donne 
+	 * w3lach makhdmnach bstream 7it fstream mamymknch dir break 
+	 * wl9ina 2dyal solusions khrin ya ima ndiro query frepository bach nm7iw hadok li zaydin fdatabase 
+	 * ola nzido 2 dyal les liste f facture request fihom les ids dyal order/paymentfacture li aytm7aw ofach tatdkhl lhna 
+	 * tatm7im bdeleteAll(idsToDelete)  */
 		
 		List<Order> ordersToDelete = new ArrayList<>();
         for (Order existingOrder : facture.getOrders()) {
